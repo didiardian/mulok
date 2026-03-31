@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul Digital Muatan Lokal - SD & Tamansiswa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+        :root {
+            --primary: #2d5a27;
+            --secondary: #f4f1ea;
+            --accent: #d4a373;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--secondary);
+            color: #333;
+            overflow: hidden; /* Prevent body scroll to keep it app-like */
+        }
+
+        .slide-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            padding-top: 5rem;
+            padding-bottom: 6rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1200px; /* Lebar maksimal ditingkatkan */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-top: 12px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .card-content {
+            padding: 3rem;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .heading-font {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem; /* Judul lebih besar */
+            line-height: 1.2;
+        }
+
+        @media (max-width: 768px) {
+            .heading-font { font-size: 2.2rem; }
+            .card-content { padding: 1.5rem; }
+        }
+
+        .text-xl-custom { font-size: 1.5rem; line-height: 1.6; }
+        .text-lg-custom { font-size: 1.25rem; line-height: 1.6; }
+
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            background: #1e3d1a;
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tamansiswa-badge {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeeba;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Custom scrollbar */
+        .card-content::-webkit-scrollbar { width: 8px; }
+        .card-content::-webkit-scrollbar-track { background: #f1f1f1; }
+        .card-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .card-content::-webkit-scrollbar-thumb:hover { background: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+    </div>
+
+    <!-- Header / Navigation -->
+    <header class="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md z-40 px-8 py-4 flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-4">
+            <div class="bg-green-800 text-white p-3 rounded-xl">
+                <i class="fas fa-university text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg md:text-xl text-green-900 leading-tight">Muatan Lokal Pendidikan Dasar</h1>
+                <p id="slideIndicator" class="text-sm text-gray-500 font-medium">Slide 1 dari 17</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleSidebar()" class="bg-gray-100 text-green-800 p-3 hover:bg-green-800 hover:text-white transition-colors rounded-xl flex items-center gap-2 font-bold">
+                <i class="fas fa-list-ul"></i>
+                <span class="hidden md:inline">Materi</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar" class="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl z-50 transform translate-x-full sidebar p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="font-bold text-2xl heading-font">Indeks Modul</h2>
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-red-500 text-2xl transition-colors"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="space-y-8">
+            <div>
+                <h3 class="text-xs font-black text-green-800 uppercase tracking-[0.2em] mb-4 border-b pb-2">Bagian 1: Konsep Dasar</h3>
+                <ul id="menuP1" class="space-y-2"></ul>
+            </div>
+            <div>
+                <h3 class="text-xs font-black text-blue-800 uppercase tracking-[0.2em] mb-4 border-b pb-2">Bagian 2: Kebijakan</h3>
+                <ul id="menuP2" class="space-y-2"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main>
+        <div id="slideViewport" class="slide-container">
+            <!-- Slide content will be injected here -->
+        </div>
+    </main>
+
+    <!-- Bottom Controls -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-sm border-t border-gray-200 p-5 px-10 flex justify-between items-center z-40">
+        <button id="prevBtn" onclick="prevSlide()" class="nav-btn flex items-center gap-3 shadow-lg">
+            <i class="fas fa-arrow-left"></i> <span>Sebelumnya</span>
+        </button>
+        
+        <div class="hidden lg:flex items-center gap-3">
+            <i class="fas fa-tags text-amber-500"></i>
+            <span id="categoryBadge" class="text-sm font-bold text-gray-500 uppercase tracking-widest"></span>
+        </div>
+
+        <button id="nextBtn" onclick="nextSlide()" class="nav-btn flex items-center gap-3 shadow-lg">
+            <span>Berikutnya</span> <i class="fas fa-arrow-right"></i>
+        </button>
+    </nav>
+
+    <script>
+        const slides = [
+            // PERTEMUAN 1
+            {
+                id: 1,
+                category: "Pertemuan 1",
+                title: "Konsep Dasar Muatan Lokal",
+                subtitle: "Perspektif Sekolah Dasar & Tamansiswa",
+                content: `
+                    <div class="text-center py-10 flex flex-col items-center justify-center h-full">
+                        <div class="bg-green-50 p-10 rounded-full mb-10">
+                            <i class="fas fa-landmark text-8xl text-green-800"></i>
+                        </div>
+                        <p class="text-2xl md:text-3xl text-gray-600 italic font-light max-w-2xl leading-relaxed">
+                            "Pendidikan yang membumi sesuai kodrat alam, membentuk karakter yang melangit."
+                        </p>
+                        <div class="mt-12 flex flex-wrap justify-center gap-6">
+                            <div class="flex items-center gap-3 px-6 py-3 bg-green-100 text-green-800 rounded-2xl font-bold text-lg">
+                                <i class="fas fa-calendar-alt"></i> Sesi 1
+                            </div>
+                            <div class="flex items-center gap-3 px-6 py-3 bg-amber-100 text-amber-800 rounded-2xl font-bold text-lg">
+                                <i class="fas fa-compass"></i> Teori Dasar
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 2,
+                category: "Pengertian",
+                title: "Apa itu Muatan Lokal?",
+                content: `
+                    <div class="space-y-10">
+                        <p class="text-xl-custom text-gray-700 leading-relaxed">
+                            Program pendidikan yang isi dan medianya dikaitkan dengan <span class="bg-green-100 px-2 font-semibold">lingkungan alam, sosial, dan budaya setempat.</span>
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="p-8 bg-green-50 rounded-3xl border-b-8 border-green-600 flex flex-col items-center text-center">
+                                <i class="fas fa-seedling text-4xl text-green-600 mb-4"></i>
+                                <h4 class="text-xl font-bold mb-2">Alam</h4>
+                                <p class="text-sm text-gray-600">Mengenal potensi & kekayaan alam daerah.</p>
+                            </div>
+                            <div class="p-8 bg-amber-50 rounded-3xl border-b-8 border-amber-600 flex flex-col items-center text-center">
+                                <i class="fas fa-users text-4xl text-amber-600 mb-4"></i>
+                                <h4 class="text-xl font-bold mb-2">Sosial</h4>
+                                <p class="text-sm text-gray-600">Interaksi masyarakat & norma lokal.</p>
+                            </div>
+                            <div class="p-8 bg-blue-50 rounded-3xl border-b-8 border-blue-600 flex flex-col items-center text-center">
+                                <i class="fas fa-theater-masks text-4xl text-blue-600 mb-4"></i>
+                                <h4 class="text-xl font-bold mb-2">Budaya</h4>
+                                <p class="text-sm text-gray-600">Adat istiadat, bahasa, & seni daerah.</p>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-gray-50 rounded-2xl border-l-8 border-gray-300">
+                            <h4 class="font-black text-green-800 text-lg mb-4 flex items-center gap-2">
+                                <i class="fas fa-search"></i> IMPLEMENTASI DI SD:
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-white p-4 rounded-xl shadow-sm italic text-lg">"Kelas 1-2: Lagu & bahasa ibu"</div>
+                                <div class="bg-white p-4 rounded-xl shadow-sm italic text-lg">"Kelas 3-4: Cerita rakyat daerah"</div>
+                                <div class="bg-white p-4 rounded-xl shadow-sm italic text-lg">"Kelas 5-6: Analisis nilai budaya"</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                category: "Definisi",
+                title: "Regulasi & Tamansiswa",
+                content: `
+                    <div class="space-y-8">
+                        <div class="bg-white border-2 border-green-100 p-8 rounded-3xl relative">
+                            <i class="fas fa-quote-left text-4xl text-green-100 absolute top-4 left-4"></i>
+                            <p class="text-2xl text-gray-700 italic relative z-10 leading-relaxed pl-8">
+                                Muatan lokal merupakan bagian dari kurikulum yang disesuaikan dengan potensi dan keunikan daerah.
+                            </p>
+                        </div>
+                        
+                        <div class="tamansiswa-badge">
+                            <div class="bg-white p-4 rounded-full shadow-md text-amber-600">
+                                <i class="fas fa-leaf text-3xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-lg mb-1">🌿 PERSPEKTIF TAMANSISWA</h4>
+                                <p class="text-lg leading-snug">Pendidikan harus sesuai <strong>Kodrat Alam</strong> anak. Tidak boleh lepas dari lingkungan budaya agar anak tidak kehilangan jati diri.</p>
+                            </div>
+                        </div>
+
+                        <p class="text-xl text-gray-600 mt-6 border-t pt-6">
+                            Mulok bukan sekadar pelajaran tambahan, melainkan strategi agar pendidikan "membumi" dan relevan bagi kehidupan peserta didik.
+                        </p>
+                    </div>
+                `
+            },
+            {
+                id: 4,
+                category: "Filosofi",
+                title: "Landasan Filosofis",
+                content: `
+                    <div class="space-y-8">
+                        <div class="bg-green-900 text-white p-10 rounded-[3rem] shadow-2xl flex items-center gap-8">
+                            <i class="fas fa-brain text-6xl opacity-30"></i>
+                            <div>
+                                <h3 class="text-4xl font-black italic mb-2 tracking-tight">"Berpikir Global, Berakar Lokal"</h3>
+                                <p class="text-xl opacity-80">Menjadi warga dunia tanpa melupakan asal usul.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                            <div class="p-8 bg-white border-2 border-gray-100 rounded-3xl hover:border-green-600 transition-all">
+                                <h4 class="text-2xl font-bold text-green-800 mb-4 flex items-center gap-3">
+                                    <i class="fas fa-anchor"></i> Akar Budaya
+                                </h4>
+                                <p class="text-lg text-gray-600">Pendidikan yang berakar pada budaya bangsa sendiri sebagai fondasi karakter.</p>
+                            </div>
+                            <div class="p-8 bg-white border-2 border-gray-100 rounded-3xl hover:border-green-600 transition-all">
+                                <h4 class="text-2xl font-bold text-green-800 mb-4 flex items-center gap-3">
+                                    <i class="fas fa-gem"></i> Kearifan Lokal
+                                </h4>
+                                <p class="text-lg text-gray-600">Nilai moral dan etika masyarakat setempat yang menjadi pedoman hidup.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50 p-6 rounded-2xl text-lg flex items-center gap-4">
+                             <i class="fas fa-info-circle text-amber-500 text-2xl"></i>
+                             <p><strong>Filosofi Tamansiswa:</strong> Pendidikan adalah proses <strong>Memerdekakan Manusia</strong> melalui penguatan budaya.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 5,
+                category: "Yuridis",
+                title: "Landasan Yuridis",
+                content: `
+                    <div class="flex flex-col gap-8">
+                        <div class="flex flex-col md:flex-row gap-8">
+                            <div class="flex-1 bg-gradient-to-br from-green-700 to-green-900 text-white p-10 rounded-3xl shadow-xl">
+                                <i class="fas fa-gavel text-5xl mb-6 opacity-40"></i>
+                                <h3 class="text-3xl font-bold mb-4">UUD 1945</h3>
+                                <p class="text-xl leading-relaxed">Pasal 32: Negara memajukan kebudayaan nasional Indonesia di tengah peradaban dunia.</p>
+                            </div>
+                            <div class="flex-1 bg-gradient-to-br from-amber-600 to-amber-800 text-white p-10 rounded-3xl shadow-xl">
+                                <i class="fas fa-balance-scale text-5xl mb-6 opacity-40"></i>
+                                <h3 class="text-3xl font-bold mb-4">UU Sisdiknas</h3>
+                                <p class="text-xl leading-relaxed">No. 20 Tahun 2003: Kurikulum dikembangkan sesuai dengan potensi dan keunikan daerah.</p>
+                            </div>
+                        </div>
+                        <div class="p-8 bg-green-50 rounded-3xl border-2 border-dashed border-green-300">
+                            <h4 class="text-2xl font-bold text-green-800 mb-2">🔎 Implikasi Nyata:</h4>
+                            <p class="text-xl text-gray-700">Setiap sekolah dasar memiliki kebebasan mengembangkan konten lokal yang spesifik bagi siswanya.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 6,
+                category: "Sosiologis",
+                title: "Landasan Sosiologis",
+                content: `
+                    <div class="space-y-10">
+                        <p class="text-2xl text-gray-700">Pendidikan perlu menyesuaikan dengan kebutuhan masyarakat agar tidak terjadi <span class="text-red-600 font-bold">Alienasi Pendidikan</span>.</p>
+                        
+                        <div class="relative bg-white border-2 border-gray-100 p-12 rounded-[4rem] text-center">
+                            <h4 class="text-3xl font-black text-green-900 mb-8 underline decoration-amber-400 decoration-4 underline-offset-8">🌿 TRI PUSAT PENDIDIKAN</h4>
+                            <div class="flex flex-col md:flex-row justify-around items-center gap-12">
+                                <div class="group">
+                                    <div class="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-800 transition-colors">
+                                        <i class="fas fa-home text-5xl text-green-800 group-hover:text-white"></i>
+                                    </div>
+                                    <p class="text-2xl font-black">ALAM KELUARGA</p>
+                                </div>
+                                <div class="text-green-200 hidden md:block"><i class="fas fa-link text-4xl"></i></div>
+                                <div class="group">
+                                    <div class="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-800 transition-colors">
+                                        <i class="fas fa-school text-5xl text-green-800 group-hover:text-white"></i>
+                                    </div>
+                                    <p class="text-2xl font-black">ALAM PERGURUAN</p>
+                                </div>
+                                <div class="text-green-200 hidden md:block"><i class="fas fa-link text-4xl"></i></div>
+                                <div class="group">
+                                    <div class="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-800 transition-colors">
+                                        <i class="fas fa-users text-5xl text-green-800 group-hover:text-white"></i>
+                                    </div>
+                                    <p class="text-2xl font-black">ALAM PERGERAKAN</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 7,
+                category: "Urgensi",
+                title: "Mengapa Mulok Penting?",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="flex items-start gap-6 p-8 bg-white border rounded-3xl shadow-sm">
+                            <div class="text-4xl text-blue-600"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <h4 class="text-2xl font-bold mb-2">Proteksi Budaya</h4>
+                                <p class="text-lg text-gray-600">Menjaga budaya lokal agar tidak punah tertelan arus globalisasi yang masif.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-6 p-8 bg-white border rounded-3xl shadow-sm">
+                            <div class="text-4xl text-green-600"><i class="fas fa-fingerprint"></i></div>
+                            <div>
+                                <h4 class="text-2xl font-bold mb-2">Membangun Identitas</h4>
+                                <p class="text-lg text-gray-600">Anak merasa bangga dengan jati diri dan asal-usul kedaerahannya.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-6 p-8 bg-white border rounded-3xl shadow-sm">
+                            <div class="text-4xl text-amber-600"><i class="fas fa-chart-line"></i></div>
+                            <div>
+                                <h4 class="text-2xl font-bold mb-2">Ekonomi Lokal</h4>
+                                <p class="text-lg text-gray-600">Membekali keterampilan berbasis potensi ekonomi daerah siswa.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-6 p-8 bg-white border rounded-3xl shadow-sm">
+                            <div class="text-4xl text-purple-600"><i class="fas fa-child"></i></div>
+                            <div>
+                                <h4 class="text-2xl font-bold mb-2">Fase Emas SD</h4>
+                                <p class="text-lg text-gray-600">Pembentukan karakter paling efektif dilakukan pada usia sekolah dasar.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 8,
+                category: "Peran",
+                title: "Peran Sekolah & Guru",
+                content: `
+                    <div class="space-y-8">
+                        <div class="flex flex-col md:flex-row gap-8">
+                            <div class="flex-1 p-10 border-2 border-gray-100 rounded-3xl bg-gray-50">
+                                <h4 class="text-2xl font-black text-green-800 mb-6 flex items-center gap-3"><i class="fas fa-university"></i> AGEN PELESTARIAN</h4>
+                                <ul class="space-y-4 text-xl">
+                                    <li class="flex gap-4"><i class="fas fa-check text-green-500 mt-1"></i> Integrasi Budaya</li>
+                                    <li class="flex gap-4"><i class="fas fa-check text-green-500 mt-1"></i> Praktisi Lokal</li>
+                                    <li class="flex gap-4"><i class="fas fa-check text-green-500 mt-1"></i> Proyek Kearifan</li>
+                                </ul>
+                            </div>
+                            <div class="flex-1 p-10 bg-green-900 text-white rounded-3xl shadow-xl">
+                                <h4 class="text-2xl font-black mb-6 flex items-center gap-3"><i class="fas fa-user-tie"></i> TRILOGI GURU</h4>
+                                <div class="space-y-6">
+                                    <div class="border-l-4 border-amber-400 pl-4">
+                                        <p class="font-bold text-2xl">Ing Ngarso Sung Tulodo</p>
+                                        <p class="text-lg opacity-70">Di depan memberi teladan.</p>
+                                    </div>
+                                    <div class="border-l-4 border-amber-400 pl-4">
+                                        <p class="font-bold text-2xl">Ing Madyo Mangun Karso</p>
+                                        <p class="text-lg opacity-70">Di tengah membangun karsa.</p>
+                                    </div>
+                                    <div class="border-l-4 border-amber-400 pl-4">
+                                        <p class="font-bold text-2xl">Tut Wuri Handayani</p>
+                                        <p class="text-lg opacity-70">Di belakang memberi dorongan.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 9,
+                category: "Simpulan Sesi 1",
+                title: "Penutup Pertemuan 1",
+                content: `
+                    <div class="text-center flex flex-col items-center justify-center h-full gap-10">
+                        <div class="bg-green-100 p-12 rounded-full">
+                            <i class="fas fa-hands-helping text-9xl text-green-800"></i>
+                        </div>
+                        <h3 class="text-4xl font-bold text-gray-800 leading-tight">Muatan lokal adalah jembatan emas antara sekolah dan denyut nadi masyarakat.</h3>
+                        <div class="bg-amber-100 p-6 rounded-2xl border-2 border-amber-300">
+                            <p class="text-2xl text-amber-900 font-bold italic">"Mari menjadi Pamong yang menuntun anak mencintai akarnya."</p>
+                        </div>
+                        <button onclick="nextSlide()" class="bg-green-800 text-white text-2xl px-12 py-5 rounded-3xl font-black shadow-xl hover:bg-green-700 transition-all">
+                            LANJUT SESI 2: KEBIJAKAN <i class="fas fa-arrow-right ml-4"></i>
+                        </button>
+                    </div>
+                `
+            },
+            // PERTEMUAN 2 (Similar layout with large fonts)
+            {
+                id: 10,
+                category: "Pertemuan 2",
+                title: "Kebijakan & Regulasi",
+                subtitle: "Analisis Kebijakan Muatan Lokal Terkini",
+                content: `
+                    <div class="text-center py-10 flex flex-col items-center justify-center h-full">
+                        <div class="bg-blue-50 p-10 rounded-full mb-10">
+                            <i class="fas fa-balance-scale text-8xl text-blue-800"></i>
+                        </div>
+                        <p class="text-2xl md:text-3xl text-gray-600 italic font-light max-w-2xl leading-relaxed">
+                            "Regulasi adalah payung hukum, namun implementasi adalah seni kreativitas guru."
+                        </p>
+                        <div class="mt-12 flex flex-wrap justify-center gap-6">
+                            <div class="flex items-center gap-3 px-6 py-3 bg-blue-100 text-blue-800 rounded-2xl font-bold text-lg">
+                                <i class="fas fa-calendar-alt"></i> Sesi 2
+                            </div>
+                            <div class="flex items-center gap-3 px-6 py-3 bg-indigo-100 text-indigo-800 rounded-2xl font-bold text-lg">
+                                <i class="fas fa-file-invoice"></i> Analisis Regulasi
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 11,
+                category: "Kebijakan",
+                title: "Fleksibilitas Kurikulum",
+                content: `
+                    <div class="space-y-10">
+                        <p class="text-2xl text-gray-700 leading-relaxed">Pemerintah memberikan otonomi penuh melalui dua jalur utama pengajaran Mulok:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div class="p-10 bg-white border-4 border-blue-50 rounded-[3rem] shadow-lg hover:shadow-2xl transition-all">
+                                <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 text-blue-800">
+                                    <i class="fas fa-book-open text-4xl"></i>
+                                </div>
+                                <h4 class="text-3xl font-black text-blue-800 mb-4">MAPEL KHUSUS</h4>
+                                <p class="text-xl text-gray-600 leading-relaxed">Dialokasikan sebagai mata pelajaran berdiri sendiri dengan jam pelajaran (JP) tertentu. Fokus pada kompetensi spesifik (misal: Bahasa Daerah).</p>
+                            </div>
+                            <div class="p-10 bg-white border-4 border-indigo-50 rounded-[3rem] shadow-lg hover:shadow-2xl transition-all">
+                                <div class="w-20 h-20 bg-indigo-100 rounded-2xl flex items-center justify-center mb-6 text-indigo-800">
+                                    <i class="fas fa-layer-group text-4xl"></i>
+                                </div>
+                                <h4 class="text-3xl font-black text-indigo-800 mb-4">INTEGRASI</h4>
+                                <p class="text-xl text-gray-600 leading-relaxed">Disisipkan secara halus ke dalam mata pelajaran eksisting seperti Seni, Olahraga, atau Proyek Tematik lintas bidang.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 12,
+                category: "Kurikulum Merdeka",
+                title: "Era Kurikulum Merdeka",
+                content: `
+                    <div class="space-y-8">
+                        <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-12 rounded-[4rem] shadow-2xl relative overflow-hidden">
+                            <div class="relative z-10">
+                                <h3 class="text-4xl font-black mb-6">P5: PROJEK PROFIL PANCASILA</h3>
+                                <p class="text-2xl opacity-90 leading-relaxed">Dalam Kurikulum Merdeka, Muatan Lokal kini bernafas lebih lega melalui <span class="bg-white/20 px-2 rounded font-bold">Tema Kearifan Lokal</span> dalam proyek penguatan karakter.</p>
+                            </div>
+                            <i class="fas fa-star text-9xl absolute -right-10 -bottom-10 opacity-10"></i>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="p-8 bg-blue-50 rounded-3xl border-l-8 border-blue-600">
+                                <h4 class="text-xl font-bold mb-2 uppercase">Aksi Nyata:</h4>
+                                <p class="text-lg">Siswa melakukan observasi ke situs budaya, membuat kerajinan tradisional, atau mendokumentasikan tradisi lokal secara digital.</p>
+                            </div>
+                            <div class="p-8 bg-amber-50 rounded-3xl border-l-8 border-amber-600">
+                                <h4 class="text-xl font-bold mb-2 uppercase">🌿 Perspektif KHD:</h4>
+                                <p class="text-lg">Inilah wujud <strong>Pendidikan Merdeka</strong> yang kontekstual: Siswa belajar dari apa yang ia lihat dan rasakan setiap hari.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 13,
+                category: "Strategi",
+                title: "Implementasi di SD",
+                content: `
+                    <div class="space-y-6">
+                        <h4 class="text-2xl font-bold text-gray-700">Langkah Strategis Sekolah:</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-6 p-6 bg-white border-2 border-gray-100 rounded-3xl group hover:bg-blue-600 hover:text-white transition-all">
+                                <div class="w-16 h-16 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center font-black text-2xl group-hover:bg-white/20 group-hover:text-white">1</div>
+                                <p class="text-2xl font-bold uppercase tracking-wide">Penyusunan Capaian Belajar Lokal</p>
+                            </div>
+                            <div class="flex items-center gap-6 p-6 bg-white border-2 border-gray-100 rounded-3xl group hover:bg-blue-600 hover:text-white transition-all">
+                                <div class="w-16 h-16 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center font-black text-2xl group-hover:bg-white/20 group-hover:text-white">2</div>
+                                <p class="text-2xl font-bold uppercase tracking-wide">Pengembangan Modul Ajar Kontekstual</p>
+                            </div>
+                            <div class="flex items-center gap-6 p-6 bg-white border-2 border-gray-100 rounded-3xl group hover:bg-blue-600 hover:text-white transition-all">
+                                <div class="w-16 h-16 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center font-black text-2xl group-hover:bg-white/20 group-hover:text-white">3</div>
+                                <p class="text-2xl font-bold uppercase tracking-wide">Asesmen Berbasis Portofolio/Karya</p>
+                            </div>
+                        </div>
+                        <div class="mt-8 p-6 bg-gray-100 rounded-2xl italic text-xl text-center">
+                            "Membiasakan anak berpikir kritis melalui objek budaya yang familiar di mata mereka."
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 14,
+                category: "Pemda",
+                title: "Peran Pemerintah Daerah",
+                content: `
+                    <div class="flex flex-col gap-10">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="p-10 bg-white border rounded-3xl shadow-sm hover:shadow-xl transition-all">
+                                <div class="text-blue-800 text-5xl mb-6"><i class="fas fa-file-signature"></i></div>
+                                <h4 class="text-2xl font-black mb-4">Kebijakan Daerah</h4>
+                                <p class="text-xl text-gray-600">Menyusun SK Kepala Daerah untuk menetapkan bahasa atau seni wajib sebagai identitas provinsi/kabupaten.</p>
+                            </div>
+                            <div class="p-10 bg-white border rounded-3xl shadow-sm hover:shadow-xl transition-all">
+                                <div class="text-blue-800 text-5xl mb-6"><i class="fas fa-id-card-alt"></i></div>
+                                <h4 class="text-2xl font-black mb-4">Fasilitas Guru</h4>
+                                <p class="text-xl text-gray-600">Menyediakan anggaran pelatihan dan rekrutmen pengajar ahli di bidang kearifan lokal.</p>
+                            </div>
+                        </div>
+                        <div class="p-8 bg-indigo-900 text-white rounded-[2rem] flex items-center gap-8">
+                            <i class="fas fa-info-circle text-5xl text-amber-400"></i>
+                            <p class="text-2xl font-bold">Tanpa payung hukum dari Pemda, keberlangsungan Mulok di sekolah akan rapuh.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 15,
+                category: "Analisis",
+                title: "Kelebihan & Tantangan",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="p-10 bg-green-50 rounded-[3rem] border-b-8 border-green-800">
+                            <h4 class="text-3xl font-black text-green-800 mb-6 flex items-center gap-3"><i class="fas fa-plus-circle"></i> KELEBIHAN</h4>
+                            <ul class="space-y-4 text-xl font-medium text-gray-700">
+                                <li>- Sangat relevan dengan kebutuhan</li>
+                                <li>- Meningkatkan bangga daerah</li>
+                                <li>- Adaptif terhadap perubahan</li>
+                                <li>- Mendukung ekonomi kreatif</li>
+                            </ul>
+                        </div>
+                        <div class="p-10 bg-red-50 rounded-[3rem] border-b-8 border-red-800">
+                            <h4 class="text-3xl font-black text-red-800 mb-6 flex items-center gap-3"><i class="fas fa-exclamation-triangle"></i> TANTANGAN</h4>
+                            <ul class="space-y-4 text-xl font-medium text-gray-700">
+                                <li>- Kurangnya SDM kompeten</li>
+                                <li>- Minimnya buku teks lokal</li>
+                                <li>- Anggaran yang terbatas</li>
+                                <li>- Standarisasi yang beragam</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 16,
+                category: "Solusi",
+                title: "Solusi Strategis",
+                content: `
+                    <div class="space-y-10">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border text-center">
+                                <i class="fas fa-users-cog text-4xl text-blue-700 mb-4"></i>
+                                <h4 class="text-xl font-bold">Pelatihan Berkelanjutan</h4>
+                            </div>
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border text-center">
+                                <i class="fas fa-laptop-code text-4xl text-blue-700 mb-4"></i>
+                                <h4 class="text-xl font-bold">Digitalisasi Budaya</h4>
+                            </div>
+                            <div class="bg-white p-8 rounded-3xl shadow-lg border text-center">
+                                <i class="fas fa-handshake text-4xl text-blue-700 mb-4"></i>
+                                <h4 class="text-xl font-bold">Kemitraan Masyarakat</h4>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-amber-100 p-10 rounded-[3rem] border-l-[12px] border-amber-500 shadow-xl">
+                            <h4 class="text-3xl font-black text-amber-900 mb-4 flex items-center gap-4">
+                                <i class="fas fa-user-graduate"></i> PAMONG BUDAYA
+                            </h4>
+                            <p class="text-2xl text-amber-950 italic leading-relaxed">
+                                "Guru tidak hanya mengajar, tapi menjadi <strong>Pamong</strong> yang menuntun anak mengeksplorasi jati diri mereka melalui pengalaman nyata di lapangan."
+                            </p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 17,
+                category: "Simpulan Akhir",
+                title: "Ringkasan & Penutup",
+                content: `
+                    <div class="text-center flex flex-col items-center justify-center h-full gap-10">
+                        <div class="bg-blue-100 p-12 rounded-full">
+                            <i class="fas fa-check-double text-9xl text-blue-800"></i>
+                        </div>
+                        <h3 class="text-4xl font-bold text-gray-800 leading-tight">Sinergi antara Regulasi, Sekolah, dan Masyarakat adalah Kunci Pelestarian Bangsa.</h3>
+                        <div class="bg-green-800 text-white p-8 rounded-[2rem] shadow-2xl">
+                            <p class="text-2xl font-bold italic leading-relaxed">
+                                "Pendidikan harus disandarkan pada kodrat alam dan kodrat zaman, agar anak tumbuh merdeka dan bahagia."
+                            </p>
+                            <p class="mt-4 text-xl opacity-70">— Ki Hajar Dewantara</p>
+                        </div>
+                        <div class="flex gap-4">
+                             <button onclick="goToSlide(0)" class="px-8 py-4 bg-gray-200 rounded-2xl text-lg font-black hover:bg-gray-300 transition-all uppercase tracking-widest">Ulangi Modul</button>
+                             <button onclick="window.print()" class="px-8 py-4 bg-gray-800 text-white rounded-2xl text-lg font-black hover:bg-black transition-all uppercase tracking-widest"><i class="fas fa-print mr-2"></i> Cetak Modul</button>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentSlide = 0;
+
+        function renderSlide() {
+            const slide = slides[currentSlide];
+            const viewport = document.getElementById('slideViewport');
+            
+            // Generate Slide HTML
+            viewport.innerHTML = `
+                <div class="card fade-in">
+                    <div class="card-content">
+                        <div class="mb-4">
+                            <span class="text-sm font-black text-green-700 tracking-[0.3em] uppercase opacity-70">${slide.category}</span>
+                        </div>
+                        <h2 class="heading-font text-gray-900 mb-4">${slide.title}</h2>
+                        ${slide.subtitle ? `<p class="text-2xl text-gray-500 mb-10 font-light border-b pb-6">${slide.subtitle}</p>` : ''}
+                        <div class="mt-4">
+                            ${slide.content}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Update UI State
+            document.getElementById('slideIndicator').innerText = `Slide ${currentSlide + 1} dari ${slides.length}`;
+            document.getElementById('categoryBadge').innerText = slide.category;
+            
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+
+            // Update Navigation Buttons
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === slides.length - 1;
+
+            // Scroll card content to top
+            const activeCardContent = document.querySelector('.card-content');
+            if(activeCardContent) activeCardContent.scrollTop = 0;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                renderSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                renderSlide();
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            renderSlide();
+            toggleSidebar(false);
+        }
+
+        function toggleSidebar(force) {
+            const sidebar = document.getElementById('sidebar');
+            if (force === false) {
+                sidebar.classList.add('translate-x-full');
+            } else {
+                sidebar.classList.toggle('translate-x-full');
+            }
+        }
+
+        // Initialize Sidebar Menu
+        function initMenu() {
+            const menuP1 = document.getElementById('menuP1');
+            const menuP2 = document.getElementById('menuP2');
+            
+            slides.forEach((slide, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <button onclick="goToSlide(${index})" class="w-full text-left p-3 hover:bg-gray-100 rounded-xl text-lg flex items-center gap-4 transition-colors">
+                        <span class="text-xs w-6 h-6 bg-gray-200 flex items-center justify-center rounded-full text-gray-700 font-bold">${index + 1}</span>
+                        <span class="${index === currentSlide ? 'font-black text-green-800' : 'text-gray-600'}">${slide.title}</span>
+                    </button>
+                `;
+                
+                if (index < 9) {
+                    menuP1.appendChild(li);
+                } else {
+                    menuP2.appendChild(li);
+                }
+            });
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Initialize App
+        window.onload = () => {
+            renderSlide();
+            initMenu();
+        };
+    </script>
+</body>
+</html>
